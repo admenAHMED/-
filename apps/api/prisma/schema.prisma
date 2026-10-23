@@ -1,0 +1,157 @@
+# Prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  firstName      String?
+  lastName       String?
+  phone          String?
+  passwordHash   String
+  isActive       Boolean  @default(true)
+  tenantId       String?
+  branchId       String?
+  roles          UserRole[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  permissions String[]
+  users       UserRole[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("roles")
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  roleId    String
+  assignedAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  fullName    String
+  email       String?
+  phone       String?
+  passportNo  String?
+  tenantId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orders      Order[]
+
+  @@map("customers")
+}
+
+model Provider {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  services    Service[]
+
+  @@map("providers")
+}
+
+model Service {
+  id          String       @id @default(cuid())
+  providerId  String
+  type        String
+  name        String
+  code        String       @unique
+  basePrice   Int
+  currency    String       @default("USD")
+  isActive    Boolean      @default(true)
+  provider    Provider     @relation(fields: [providerId], references: [id])
+  orders      OrderItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("services")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  customerId      String
+  orderNumber     String      @unique
+  status          String      @default("DRAFT")
+  subtotal        Int
+  fee             Int         @default(0)
+  tax             Int         @default(0)
+  total           Int
+  currency        String      @default("USD")
+  customer        Customer    @relation(fields: [customerId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  serviceId   String
+  quantity    Int      @default(1)
+  unitPrice   Int
+  totalPrice  Int
+  status      String   @default("PENDING")
+  order       Order    @relation(fields: [orderId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("order_items")
+}
+
+model Payment {
+  id              String    @id @default(cuid())
+  orderId         String
+  paymentMethod   String
+  transactionRef  String?
+  status          String    @default("PENDING")
+  amount          Int
+  currency        String    @default("USD")
+  paidAt          DateTime?
+  order           Order     @relation(fields: [orderId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("payments")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  actorId    String?
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}
