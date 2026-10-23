@@ -1,6 +1,6 @@
 # Travel Marketplace + ERP Monorepo
 
-This repository contains a starter monorepo for a travel marketplace and ERP platform, aligned to the architecture and product model described in the specification.
+This repository contains a starter monorepo for a travel marketplace and ERP platform aligned to the product specification.
 
 ## Included
 
@@ -10,8 +10,8 @@ This repository contains a starter monorepo for a travel marketplace and ERP pla
 - `packages/ui` — shared UI components
 - `packages/types` — domain DTOs and enums
 - `packages/config` — environment and validation config
-- `packages/utils` — shared helper functions
-- `apps/api/prisma` — Prisma schema for modular domains
+- `packages/utils` — shared helpers
+- `apps/api/prisma` — Prisma schema for modules such as auth, users, customers, providers, services, orders, payments, finance, audit, and integrations
 
 ## Getting started
 
@@ -20,7 +20,7 @@ npm install
 npm run dev
 ```
 
-## Workspace scripts
+## Useful workspace commands
 
 ```bash
 npm run dev --workspace @travel/api
@@ -40,6 +40,6 @@ npm run prisma:migrate --workspace @travel/api
 - Next.js 14
 - React
 
-## Notes
+## Design intent
 
-The repo is intentionally scaffolded as a modular monorepo to separate booking, finance, ERP, and integrations without mixing business domains.
+This monorepo keeps booking, fulfillment, finance, and ERP concerns separated into modular domains instead of building a single large application.
